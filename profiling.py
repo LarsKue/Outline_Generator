@@ -3,7 +3,7 @@ import cProfile
 
 import Outline_Generator
 
-cProfile.runctx("Outline_Generator.generate()", globals(), locals(), "Profile.prof")
+cProfile.runctx("Outline_Generator.generate_files()", globals(), locals(), "Profile.prof")
 
 s = pstats.Stats("Profile.prof")
 s.strip_dirs().sort_stats("time").print_stats()

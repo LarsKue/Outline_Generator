@@ -46,6 +46,28 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
 
 
     @jit(target = "cuda")
+    def get_outline_pixels_nofade(np.ndarray image, int weight, bool fill):
+        cdef int i
+        cdef int j
+
+        cdef (int, int, int, int) bounds
+
+
+        for i in range(len(image)):
+            for j in range(len(image[0])):
+                if image[i][j][3]:
+                    if fill:
+                        yield (i, j)
+                    continue
+                bounds = (
+                    max(0, i - weight), min(len(image), i + weight + 1), max(0, j - weight),
+                    min(len(image[0]), j + weight + 1))
+                if image[bounds[0]:bounds[1], bounds[2]:bounds[3], 3].any():
+                    yield (i, j)
+
+
+
+    @jit(target = "cuda")
     def get_outlines(np.ndarray image, int weight, tuple colors, bool fill):
         cdef np.ndarray result = np.zeros_like(image)
         cdef np.ndarray faderesult = np.zeros_like(image)
@@ -64,7 +86,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
 
 
     @jit(target = "cuda")
-    def generate():
+    def generate_files():
 
         # no trailing slash
         cdef str input_dir = "input"
@@ -106,7 +128,37 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
                     Image.fromarray(outline_image).save(output_dir + f"/{fne}.{weight}.{colorname}.png")
                     Image.fromarray(fade_image).save(output_dir + f"/{fne}.{weight}.{colorname}.fade.png")
 
-
-
-
         return 0
+
+
+    @jit(target = "cuda")
+    def generate_single(np.ndarray image, list color, int weight, bool fill, bool fade):
+        image = pad_image(image, weight)
+        cdef np.ndarray result = np.zeros_like(image)
+        cdef tuple pixels
+        cdef int i
+        cdef int j
+        cdef int sqd
+
+        if fade:
+            pixels = tuple(get_outline_pixels(image, weight, fill))
+            for (i, j, sqd) in pixels:
+                result[i][j] = color[0:3] + [round(color[3] * get_alpha_factor(sqd, weight))]
+            return result
+
+        pixels = tuple(get_outline_pixels_nofade(image, weight, fill))
+        for (i, j) in pixels:
+            result[i][j] = color
+        return result
+
+
+    @jit(target = "cuda")
+    def generate(*args):
+        cdef np.ndarray image
+        cdef list color
+        cdef int weight
+        cdef bool fill
+        cdef bool fade
+        # args: list consisting of repeated image, color, weight, fill, fade
+        for image, color, weight, fill, fade in args:
+            yield generate_single(image, color, weight, fill, fade)
