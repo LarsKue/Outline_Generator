@@ -42,11 +42,11 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
                     yield (i, j, min(distances))
 
 
-    def get_outlines(np.ndarray image, int weight, colors, bool fill):
+    def get_outlines(np.ndarray image, int weight, tuple colors, bool fill):
         cdef np.ndarray result = np.zeros_like(image)
         cdef np.ndarray faderesult = np.zeros_like(image)
-        cdef list pixels = list(get_outline_pixels(image, weight, fill))
-        cdef list color
+        cdef tuple pixels = tuple(get_outline_pixels(image, weight, fill))
+        cdef (int, int, int, int) color
         cdef int i
         cdef int j
         cdef int sqd
@@ -69,7 +69,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
         # the outline weights (i.e. thickness)
         cdef list weights = [1, 2, 3]
         # the outline colors with labels, you must supply an alpha value
-        cdef dict colors = {"white": [255, 255, 255, 255], "orange": [255, 204, 0, 255], "cyan": [0, 204, 255, 255]}
+        cdef dict colors = {"white": (255, 255, 255, 255), "orange": (255, 204, 0, 255), "cyan": (0, 204, 255, 255)}
 
         cdef bool fill = False
 
@@ -98,7 +98,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
 
                 image = pad_frames(orig_image, frames, weight)
 
-                for (outline_image, fade_image), colorname in zip(get_outlines(image, weight, colors.values(), fill), colors.keys()):
+                for (outline_image, fade_image), colorname in zip(get_outlines(image, weight, tuple(colors.values()), fill), colors.keys()):
                     Image.fromarray(outline_image).save(output_dir + f"/{fne}.{weight}.{colorname}.png")
                     Image.fromarray(fade_image).save(output_dir + f"/{fne}.{weight}.{colorname}.fade.png")
 

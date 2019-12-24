@@ -51,7 +51,7 @@ IF OUTLINE_GENERATOR_UTILS_PXD == 0:
     cdef double get_alpha_factor(int distance, int weight):
         # we use quadratic interpolation
         # the maximum distance is fully diagonal
-        max_dist = 2 * weight ** 2
+        cdef int max_dist = 2 * weight ** 2
 
         return 1 - distance / max_dist
 
