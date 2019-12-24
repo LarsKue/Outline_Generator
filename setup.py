@@ -8,6 +8,7 @@ import os
 from glob import glob
 
 import numpy as np
+import pathlib
 
 
 def glob_files(*args, **kwargs):
@@ -56,5 +57,5 @@ setup(
                           compiler_directives={"language_level": "3"},
                           force=True  # for debugging, forces recompiling all files
                           ),
-    requires=["Cython"]
+    requires=["Cython", "pillow", "numpy"]
 )

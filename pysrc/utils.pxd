@@ -2,9 +2,7 @@
 IF OUTLINE_GENERATOR_UTILS_PXD == 0:
     DEF OUTLINE_GENERATOR_UTILS_PXD = 1
 
-    import pathlib
     import os
-    from shutil import rmtree
 
     cimport numpy as np
     import numpy as np

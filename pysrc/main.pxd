@@ -7,6 +7,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
 
 
     from PIL import Image
+    import pathlib
 
     from libcpp cimport bool
 
