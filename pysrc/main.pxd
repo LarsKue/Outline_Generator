@@ -46,7 +46,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
         cdef np.ndarray result = np.zeros_like(image)
         cdef np.ndarray faderesult = np.zeros_like(image)
         cdef tuple pixels = tuple(get_outline_pixels(image, weight, fill))
-        cdef (int, int, int, int) color
+        cdef list color
         cdef int i
         cdef int j
         cdef int sqd
@@ -55,7 +55,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
         for color in colors:
             for (i, j, sqd) in pixels:
                 result[i][j] = color
-                faderesult[i][j] = np.round(np.array(color) * np.array([1, 1, 1, get_alpha_factor(sqd, weight)]))
+                faderesult[i][j] = np.array(color[0:3] + [round(color[3] * get_alpha_factor(sqd, weight))])
             yield result, faderesult
 
 
@@ -69,7 +69,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
         # the outline weights (i.e. thickness)
         cdef list weights = [1, 2, 3]
         # the outline colors with labels, you must supply an alpha value
-        cdef dict colors = {"white": (255, 255, 255, 255), "orange": (255, 204, 0, 255), "cyan": (0, 204, 255, 255)}
+        cdef dict colors = {"white": [255, 255, 255, 255], "orange": [255, 204, 0, 255], "cyan": [0, 204, 255, 255]}
 
         cdef bool fill = False
 
