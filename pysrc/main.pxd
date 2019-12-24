@@ -9,11 +9,14 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
     from PIL import Image
     import pathlib
 
+    from numba import jit, cuda
+
     from libcpp cimport bool
 
     include "utils.pxd"
 
 
+    @jit(target = "cuda")
     def get_outline_pixels(np.ndarray image, int weight, bool fill):
         cdef int i
         cdef int j
@@ -42,6 +45,7 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
                     yield (i, j, min(distances))
 
 
+    @jit(target = "cuda")
     def get_outlines(np.ndarray image, int weight, tuple colors, bool fill):
         cdef np.ndarray result = np.zeros_like(image)
         cdef np.ndarray faderesult = np.zeros_like(image)
@@ -59,8 +63,8 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
             yield result, faderesult
 
 
-    
-    cpdef int generate() except? -1:
+    @jit(target = "cuda")
+    def generate():
 
         # no trailing slash
         cdef str input_dir = "input"
