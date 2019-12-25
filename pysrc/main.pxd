@@ -8,10 +8,15 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
 
     from PIL import Image
     import pathlib
+    from reprint import output
 
     from libcpp cimport bool
 
     include "utils.pxd"
+
+
+    cdef int reprint_key(x):
+        return 1
 
 
     def get_outline_pixels(np.ndarray image, int weight, bool fill):
@@ -80,28 +85,43 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
         cdef str colorname
         cdef str fne
 
+        cdef tuple files = tuple(pathlib.Path(input_dir).rglob("*.png"))
 
-        for filepath in pathlib.Path(input_dir).rglob("*.png"):
-            print(f"Generating outlines for {filepath}...")
-
-            orig_image = np.asarray(Image.open(filepath).convert("RGBA"))
-
-            if "animations" in str(filepath):
-                frames = numframes(str(filepath))
-            else:
-                frames = 1
+        cdef int numfiles = len(files)
+        cdef int i
 
 
-            fne = filename_no_ext(str(filepath))
+        with output(output_type="dict", sort_key=reprint_key) as output_lines:
 
-            for weight in weights:
 
-                image = pad_frames(orig_image, frames, weight)
 
-                for (outline_image, fade_image), colorname in zip(get_outlines(image, weight, tuple(colors.values()), fill), colors.keys()):
-                    Image.fromarray(outline_image).save(output_dir + f"/{fne}.{weight}.{colorname}.png")
-                    Image.fromarray(fade_image).save(output_dir + f"/{fne}.{weight}.{colorname}.fade.png")
+            for i, filepath in enumerate(files):
+                output_lines["Processing File"] = f"{i + 1} out of {numfiles}."
+                output_lines["Progress"] = "[" + "#" * round(50 * i / numfiles) + " " * round(50 * (1 - i / numfiles)) + "]"
+                output_lines["Current File"] = str(filepath)
 
+                orig_image = np.asarray(Image.open(filepath).convert("RGBA"))
+
+                if "animations" in str(filepath):
+                    frames = numframes(str(filepath))
+                else:
+                    frames = 1
+
+
+                fne = filename_no_ext(str(filepath))
+
+                for weight in weights:
+
+                    image = pad_frames(orig_image, frames, weight)
+
+                    for (outline_image, fade_image), colorname in zip(get_outlines(image, weight, tuple(colors.values()), fill), colors.keys()):
+                        Image.fromarray(outline_image).save(output_dir + f"/{fne}.{weight}.{colorname}.png")
+                        Image.fromarray(fade_image).save(output_dir + f"/{fne}.{weight}.{colorname}.fade.png")
+
+
+            output_lines["Progress"] = "[" + "#" * 50 + "]"
+
+        print("Done.")
 
 
 
