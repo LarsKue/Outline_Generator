@@ -9,7 +9,7 @@ IF OUTLINE_GENERATOR_UTILS_PXD == 0:
 
 
     cdef str filename_no_ext(str filename):
-        return str(os.path.splitext(os.path.basename(filename))[0])
+        return str(os.path.splitext(filename)[0])
 
     cdef int numframes(str filename):
         cdef str fne = filename_no_ext(filename)

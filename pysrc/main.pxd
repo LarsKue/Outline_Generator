@@ -100,6 +100,11 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
                 output_lines["Progress"] = "[" + "#" * round(50 * i / numfiles) + " " * round(50 * (1 - i / numfiles)) + "]"
                 output_lines["Current File"] = str(filepath)
 
+                # we want to mirror the directory structure of input
+                target_path = pathlib.Path(str(filepath.parent).replace(input_dir, output_dir))
+                if not target_path.exists():
+                    target_path.mkdir(parents=True, exist_ok=True)
+
                 orig_image = np.asarray(Image.open(filepath).convert("RGBA"))
 
                 if "animations" in str(filepath):
@@ -107,16 +112,13 @@ IF OUTLINE_GENERATOR_MAIN_PXD == 0:
                 else:
                     frames = 1
 
-
-                fne = filename_no_ext(str(filepath))
-
                 for weight in weights:
 
                     image = pad_frames(orig_image, frames, weight)
 
                     for (outline_image, fade_image), colorname in zip(get_outlines(image, weight, tuple(colors.values()), fill), colors.keys()):
-                        Image.fromarray(outline_image).save(output_dir + f"/{fne}.{weight}.{colorname}.png")
-                        Image.fromarray(fade_image).save(output_dir + f"/{fne}.{weight}.{colorname}.fade.png")
+                        Image.fromarray(outline_image).save(str(target_path) + f"/{filepath.stem}.{weight}.{colorname}.png")
+                        Image.fromarray(fade_image).save(str(target_path) + f"/{filepath.stem}.{weight}.{colorname}.fade.png")
 
 
             output_lines["Progress"] = "[" + "#" * 50 + "]"
