@@ -57,5 +57,5 @@ setup(
                           compiler_directives={"language_level": "3"},
                           force=True  # for debugging, forces recompiling all files
                           ),
-    requires=["Cython", "pillow", "numpy"]
+    requires=["Cython", "pillow", "numpy", 'reprint']
 )
